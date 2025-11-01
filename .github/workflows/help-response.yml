@@ -6,16 +6,14 @@ on:
 
 permissions:
   issues: write # Grants authority to post a comment
-  contents: read # CRITICAL FIX: Allows actions/checkout@v4 to clone the private repo
+  contents: read # CRITICAL: Allows actions/checkout@v4 to clone the private repo
 
 jobs:
   respond_to_help_command:
     runs-on: ubuntu-latest
     
-    # FINAL SYNTAX FIX: This is the correct way to make the trigger case-insensitive in GA expressions.
-    if: |
-      github.actor != 'github-actions' &&
-      startsWith(lower(github.event.comment.body), '/help')
+    # The job runs on every comment, but the internal script handles the logic check.
+    if: github.actor != 'github-actions' # Anti-loop check remains at job level
 
     steps:
       - name: Checkout Code (Required for gh CLI)
@@ -25,7 +23,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
           RESPONSE_BODY: "Currently, help resources are not available. Please refer to the repository README for guidance."
         run: |
-          echo "Automated response triggered for issue #$ISSUE_NUMBER"
+          # 1. Calculate the lowercase version of the comment body
+          COMMENT_BODY_LOWER=$(echo $COMMENT_BODY | tr '[:upper:]' '[:lower:]')
+          
+          echo "Checking comment body: $COMMENT_BODY_LOWER"
+
+          # 2. Check if the lowercase body starts with the trigger "/help"
+          # The asterisk (*) is a wildcard, checking if the string begins with /help
+          if [[ $COMMENT_BODY_LOWER != "/help"* ]]; then
+            echo "Condition not met. Exiting gracefully."
+            exit 0
+          fi
+          
+          # 3. If the condition is met, post the response
+          echo "Trigger found. Posting automated response to Issue #$ISSUE_NUMBER"
           gh issue comment $ISSUE_NUMBER --body "$RESPONSE_BODY"
