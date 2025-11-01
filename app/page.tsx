@@ -1,65 +1,61 @@
-import Image from "next/image";
+import './globals.css';
+import Link from 'next/link';
 
-export default function Home() {
+// Component for Navigation Bar
+function Header() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <nav className="bg-gray-900 border-b border-gray-700">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center">
+            <Link href="/" className="text-white text-xl font-bold tracking-wider hover:text-indigo-400 transition duration-300">
+              PSA Launch
+            </Link>
+          </div>
+          <div className="flex space-x-4">
+            <Link href="#features" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-300">
+              Features
+            </Link>
+            <Link href="#security" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-300">
+              Security
+            </Link>
+            <Link href="#contact" className="text-indigo-400 hover:text-indigo-300 px-3 py-2 rounded-md text-sm font-medium border border-indigo-400 transition duration-300">
+              Get Started
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </div>
+    </nav>
+  );
+}
+
+// Component for Footer
+function Footer() {
+  return (
+    <footer className="bg-gray-800 text-gray-400 py-8 mt-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <p className="text-sm">&copy; {new Date().getFullYear()} Sr PSA Assessment Task 1. Built with Next.js and Tailwind CSS.</p>
+        <p className="text-xs mt-2">Focus: Web Development, Git CLI, and Automated Deployment.</p>
+      </div>
+    </footer>
+  );
+}
+
+// Root Layout Component (Wraps the entire application)
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <title>Sr PSA Landing Page: Next.js Automation Task</title>
+        <meta name="description" content="Landing page developed for the Senior PSA take-home assignment, focusing on CI/CD and security." />
+      </head>
+      <body className="flex flex-col min-h-screen bg-gray-900 text-white">
+        <Header />
+        <main className="flex-grow">
+          {children}
+        </main>
+        <Footer />
+      </body>
+    </html>
   );
 }
