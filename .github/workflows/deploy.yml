@@ -18,7 +18,7 @@ jobs:
     # Environment variables visible to all steps in this job
     env:
       # CRITICAL: This non-secret ID is hardcoded here (replace placeholder)
-      VERCEL_PROJECT_ID: prj_d30jtB6BDkUCtJA8Re94zbMaDO62
+      VERCEL_PROJECT_ID: prj_b0z57lzqdktgORH1AmpOoOc0dwS4
       # SECRETS: These are securely injected from GitHub's secrets vault
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
 
