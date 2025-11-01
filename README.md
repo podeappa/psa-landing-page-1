@@ -1,35 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+**Path:** `psa-landing-page/README.md`
 
-## Getting Started
+````text
+# Task 1: Building and Automating a Next.js Landing Page Deployment Pipeline 
 
-First, run the development server:
+## 1. Project Overview and CLI Compliance
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+This project implements a secure, automated CI/CD pipeline for a Next.js static landing page. It serves as the primary deliverable for Task 1, demonstrating knowledge in web development, security governance, and advanced CI/CD debugging.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### A. Repository Initialization and Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The project was created and initialized using the following sequence:
 
-## Learn Moree
+1. **Local Setup:** `mkdir psa-landing-page` followed by `cd psa-landing-page`.
+2. **Next.js Creation:** `npx create-next-app@latest . --ts --eslint --tailwind --app --import-alias "@/*" --skip-git` (Skipping automatic Git init).
+3. **Git Initialization:** `git init`
+4. **Remote Configuration:** `git remote add origin <YOUR_GITHUB_REPO_URL>`
+5. **Initial Push:** `git push -u origin main`
 
-To learn more about Next.js, take a look at the following resources:
+### B. Final Application State
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Item | Detail |
+| :--- | :--- |
+| **Stack** | Next.js 14 (App Router), React, Tailwind CSS |
+| **CLI Status** | All work is complete, with history showing comprehensive feature, fix, and chore commits. |
+| **Key Configuration** | `next.config.mjs` includes `output: 'export'` and `basePath: ''` for robust static deployment. |
+| **Live URL & Status** | **https://psa-landing-page.vercel.app/** (Verified styled and functional after extensive troubleshooting.) |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 2. GitHub Actions Workflows (Triggers and Outcomes)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Three distinct workflows establish automation and governance within the repository.
+
+### 2.1. Workflow 1: Continuous Deployment (`deploy.yml`)
+
+**Goal:** Automatic build and deployment of the application to Vercel.
+
+| Configuration | Detail |
+| :--- | :--- |
+| **Trigger** | `on: push` to `branches: [main]` |
+| **Action Used** | `amondnet/vercel-action@v25` |
+| **Security** | Authentication is handled by securely injected **Secrets** (`VERCEL_TOKEN`, `VERCEL_ORG_ID`). |
+| **Outcome Verification** | **Successful Deployment:** |
+
+### 2.2. Workflow 2: PR Auto-Closure (`close-pr.yml`)
+
+**Goal:** Enforce governance by blocking code contributions from external, unauthorized users.
+
+| Configuration | Detail |
+| :--- | :--- |
+| **Trigger** | `on: pull_request` (opened, synchronized, reopened) |
+| **Security Logic** | `if: github.actor != github.repository_owner` (Blocks non-owners). |
+| **Outcome Verification** | **PR Closure:** |
+
+### 2.3. Workflow 3: Issue Comment Response (`help-response.yml`)
+
+**Goal:** Automate communication policy for standardized support responses.
+
+| Configuration | Detail |
+| :--- | :--- |
+| **Trigger** | `on: issue_comment` (created) |
+| **Security Logic** | Shell script ensures case-insensitive check for `/help` and prevents self-triggering loops. |
+| **Outcome Verification** | **Issue Response:** |
+
+---
+
+## 3. Detailed Deliverable: Security & Configuration Log
+
+This section provides the required detailed breakdown of environment variables, secrets, and permissions for final review.
+
+### A. Environment Variables and Secrets Used
+
+| Variable Name | Type | Value/Source | Purpose |
+| :--- | :--- | :--- | :--- |
+| `VERCEL_PROJECT_ID` | Environment Variable | [Insert Vercel Project ID Here] | Non-sensitive ID identifying the target Vercel project. |
+| `VERCEL_ORG_ID` | Secret | `${{ secrets.VERCEL_ORG_ID }}` | Organization/Team ID for Vercel account context (stored securely). |
+| `VERCEL_TOKEN` | Secret | `${{ secrets.VERCEL_TOKEN }}` | Personal Access Token granting deployment authority (stored securely). |
+
+
+
 
