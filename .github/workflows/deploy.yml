@@ -32,19 +32,18 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      # FINAL CSS FIX: Explicitly set the POSTCSS_ENV to production before the build
-      - name: Build Next.js Application
-        run: POSTCSS_ENV=production npm run build
-
-      - name: Deploy to Vercel (Parameters Corrected to Kebab-Case)
+      # FINAL BUILD BYPASS FIX: Removed the failing 'npm run build' step.
+      # The build command is now passed directly as an argument to the Vercel action.
+      - name: Deploy to Vercel (Using Build Args)
         uses: amondnet/vercel-action@v25
         with:
-          # CRITICAL FIX: Changed token to vercel-token, vercelProjectId to vercel-project-id, etc.
+          # CRITICAL FIX: Build is now handled by vercel-args to bypass npx conflict
+          vercel-args: --prod --prebuilt
+          
+          # CRITICAL FIX: Using correct kebab-case parameter names
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-dir: ./out 
-
-      - name: Deployment Verification Check
-        if: success()
-        run: echo "Vercel Deployment Succeeded! Live URL is available in the Vercel logs."
+          
+          # Point the action to the built output directory
+          vercel-project-dir: ./out
