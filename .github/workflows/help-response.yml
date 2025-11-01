@@ -1,0 +1,33 @@
+name: 3. Issue Comment Response Workflow
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write # Grants authority to post a comment
+
+jobs:
+  respond_to_help_command:
+    runs-on: ubuntu-latest
+
+    # The entire job runs only if the comment is NOT from the GitHub Actions bot
+    # AND the comment body starts with "/help" (case insensitive)
+    if: |
+      github.actor != 'github-actions' &&
+      startsWith(github.event.comment.body, '/help') || 
+      startsWith(github.event.comment.body, '/HELP') || 
+      startsWith(github.event.comment.body, '/Help')
+
+    steps:
+      - name: Checkout Code # Required for access to the GH CLI environment
+        uses: actions/checkout@v4
+
+      - name: Post Automated Response
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          RESPONSE_BODY: "Currently, help resources are not available. Please refer to the repository README for guidance."
+        run: |
+          echo "Automated response triggered for issue #$ISSUE_NUMBER"
+          gh issue comment $ISSUE_NUMBER --body "$RESPONSE_BODY"
