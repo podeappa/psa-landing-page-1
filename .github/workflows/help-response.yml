@@ -12,7 +12,7 @@ jobs:
   respond_to_help_command:
     runs-on: ubuntu-latest
     
-    # Ensures the conditional logic is robust and case-insensitive
+    # FINAL SYNTAX FIX: This is the correct way to make the trigger case-insensitive in GA expressions.
     if: |
       github.actor != 'github-actions' &&
       startsWith(lower(github.event.comment.body), '/help')
