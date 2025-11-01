@@ -1,0 +1,48 @@
+# Workflow 2: Pull Request Auto-Closure Workflow (close-pr.yml)
+
+name: 2. Pull Request Governance and Auto-Closure
+
+# -----------------
+# 1. TRIGGER
+# -----------------
+# Runs when a Pull Request is opened, updated with new commits, or reopened.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+# -----------------
+# 2. PERMISSIONS (CRITICAL: Grants authority to close/comment on the PR)
+# -----------------
+permissions:
+  contents: read # Read the file contents of the PR for context
+  pull-requests: write # ESSENTIAL: Allows the workflow to close the PR and add a comment.
+
+# -----------------
+# 3. JOBS
+# -----------------
+jobs:
+  check_and_close_pr:
+    runs-on: ubuntu-latest
+
+    # GOVERNANCE LOGIC: Only run this job if the PR author is NOT the repo owner.
+    # If the actor (triggerer) is different from the owner, the condition is true.
+    if: github.actor != github.repository_owner
+
+    steps:
+      # Step 1: Use the built-in GitHub Token to authenticate the GitHub CLI (gh).
+      - name: Close Pull Request with Policy Comment
+        # The GH_TOKEN is a temporary token automatically provided by GitHub Actions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          
+          # 1. Add the standardized comment using gh CLI
+          echo "Adding closure comment to PR #$PR_NUMBER..."
+          gh pr comment $PR_NUMBER --body "🚨 **Policy Violation:** Pull requests from external contributors are not accepted at this time for security reasons and repository governance rules. This policy is enforced via the `close-pr.yml` GitHub Action."
+          
+          # 2. Close the PR
+          echo "Closing PR #$PR_NUMBER..."
+          gh pr close $PR_NUMBER
+          
+          echo "PR Closure enforced."
