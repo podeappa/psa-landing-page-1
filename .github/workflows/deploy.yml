@@ -1,82 +1,64 @@
 # Workflow 1: Automated Deployment Workflow (deploy.yml)
+# Status: CORRECTED to use the working 'amondnet/vercel-action@v25'
 
 name: 1. Continuous Deployment to Vercel
 
-# -----------------
-# 1. TRIGGER
-# -----------------
-# This workflow is triggered on every push event to the 'main' branch.
 on:
   push:
     branches:
       - main
 
-# -----------------
-# 2. PERMISSIONS (CRITICAL for security)
-# -----------------
-# We set permissions explicitly to prevent unauthorized access.
-# The 'id-token' permission is required by the Vercel Action for secure
-# OpenID Connect (OIDC) authentication in future setups, but even for
-# token-based auth, it's good practice to define minimal needed permissions.
+# Security Best Practice: Define minimum necessary permissions (Least Privilege)
 permissions:
   contents: read
   checks: write
-  pull-requests: write # Required if we want to add a deployment link comment
+  pull-requests: write
 
-# -----------------
-# 3. JOBS
-# -----------------
 jobs:
   deploy:
-    # Set environment for the job (e.g., Ubuntu Linux runner)
     runs-on: ubuntu-latest
-    
-    # Define environment variables needed by the Vercel Action.
+
+    # Environment variables for the Vercel Action
     env:
-      # Next.js build output directory for Vercel
+      # CRITICAL: Replace <PASTE_YOUR_VERCEL_PROJECT_ID_HERE> with your actual Project ID.
+      # This is NOT a secret and can be checked into the source code.
       VERCEL_PROJECT_ID: prj_d30jtB6BDkUCtJA8Re94zbMaDO62
+      
+      # VERCEL_ORG_ID is stored securely in GitHub Secrets.
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
 
     steps:
-      # Step 1: Checkout the code
       - name: Checkout Code
-        # Uses a trusted, pinned version of the action for stability and security
         uses: actions/checkout@v4
 
-      # Step 2: Set up Node.js environment
-      - name: Set up Node.js
+      - name: Set up Node.js Environment
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # Step 3: Install dependencies
       - name: Install Dependencies
-        # Use a frozen lockfile install for production build integrity
+        # Using 'npm ci' for reproducible and faster CI/CD builds
         run: npm ci
 
-      # Step 4: Run the Build (CI Step)
       - name: Build Next.js Application
-        # This command runs the 'next build' defined in package.json
+        # This step performs the compilation and optimization
         run: npm run build
 
-      # -------------------------------------
-      # Step 5: DEPLOYMENT (CD Step)
-      # -------------------------------------
-      - name: Deploy to Vercel
-        uses: vercel/actions-deploy@v1
+      # -----------------------------------------------------------------
+      # FIX IMPLEMENTATION: Changed Action to amondnet/vercel-action@v25
+      # This resolves the "Unable to resolve action vercel/actions-deploy" error.
+      # -----------------------------------------------------------------
+      - name: Deploy to Vercel (Production)
+        # Using a widely adopted, community-maintained Vercel action
+        uses: amondnet/vercel-action@v25 
         with:
-          # VERCEL_TOKEN must be stored as a GitHub Secret. This is the secure way.
-          token: ${{ secrets.VERCEL_TOKEN }}
-          # The next two variables help the Vercel action identify the project
-          vercelProjectId: ${{ env.VERCEL_PROJECT_ID }}
-          vercelOrgId: ${{ env.VERCEL_ORG_ID }}
-          # Define deployment settings
-          vercelScope: '' # Leave blank unless using a specific Vercel team scope
-          # Build command is implicitly run by 'npm run build' above, but can be specified here:
-          # buildCommand: 'npm run build'
-          # deploymentTarget: 'production' # Uncomment this line to deploy directly to production domain
+          # VERCEL_TOKEN must be stored securely as a GitHub Secret
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
+          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
+          # Ensures deployment goes to the production domain
+          vercel-args: '--prod'
           
-      # Step 6: Verify deployment success (Simple verification)
       - name: Deployment Verification Check
         if: success()
-        run: echo "Vercel Deployment Succeeded! Live URL is available in the Vercel logs."
+        run: echo "Vercel Deployment SUCCESSFUL! Check Vercel Dashboard for live URL."
