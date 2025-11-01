@@ -6,21 +6,19 @@ on:
 
 permissions:
   issues: write # Grants authority to post a comment
+  contents: read # CRITICAL FIX: Allows actions/checkout@v4 to clone the private repo
 
 jobs:
   respond_to_help_command:
     runs-on: ubuntu-latest
-
-    # The entire job runs only if the comment is NOT from the GitHub Actions bot
-    # AND the comment body starts with "/help" (case insensitive)
+    
+    # Ensures the conditional logic is robust and case-insensitive
     if: |
       github.actor != 'github-actions' &&
-      startsWith(github.event.comment.body, '/help') || 
-      startsWith(github.event.comment.body, '/HELP') || 
-      startsWith(github.event.comment.body, '/Help')
+      startsWith(lower(github.event.comment.body), '/help')
 
     steps:
-      - name: Checkout Code # Required for access to the GH CLI environment
+      - name: Checkout Code (Required for gh CLI)
         uses: actions/checkout@v4
 
       - name: Post Automated Response
