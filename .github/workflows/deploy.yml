@@ -36,14 +36,14 @@ jobs:
       - name: Build Next.js Application
         run: POSTCSS_ENV=production npm run build
 
-      - name: Deploy to Vercel
+      - name: Deploy to Vercel (Parameters Corrected to Kebab-Case)
         uses: amondnet/vercel-action@v25
         with:
-          token: ${{ secrets.VERCEL_TOKEN }}
-          vercelProjectId: ${{ env.VERCEL_PROJECT_ID }}
-          vercelOrgId: ${{ env.VERCEL_ORG_ID }}
-          # Set the build output directory to 'out' for static export
-          vercelProjectDir: ./out 
+          # CRITICAL FIX: Changed token to vercel-token, vercelProjectId to vercel-project-id, etc.
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-dir: ./out 
 
       - name: Deployment Verification Check
         if: success()
