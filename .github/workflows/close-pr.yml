@@ -1,51 +1,53 @@
 name: 2. Pull Request Auto-Closure
 
 on:
-  pull_request:
+  # CRITICAL FIX: Changed to pull_request_target to run in the trusted base repository context
+  pull_request_target:
     types: [opened, synchronized, reopened]
 
 permissions:
-  pull-requests: write # Grants authority to post comment and close PR
-  contents: read # Allows actions/checkout to clone and establish Git context
+  pull-requests: write # FINAL FIX: Grants authority to post comment and close PR
+  contents: read # Required to checkout the safe version of the repository
 
 jobs:
   check_and_close_pr:
-    runs-on: ubuntu-latest
-
-    # Job runs only if the author is NOT the owner
+    # Run only if the author is NOT the owner
     if: github.actor != github.repository_owner
 
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code (Required for API Context)
+      # We checkout the SAFE base commit, not the untrusted head commit (security best practice for pull_request_target)
+      - name: Checkout Base Repository for Context
         uses: actions/checkout@v4
         with:
-          # Fetch depth 0 ensures full history and fixes "not a git repository" error
+          ref: ${{ github.event.pull_request.base.sha }}
           fetch-depth: 0 
           
-      - name: Post Closure Comment and Close PR (REST API Bypass)
+      - name: Post Closure Comment and Close PR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPOSITORY: ${{ github.repository }}
           RESPONSE_BODY: "Pull requests from external contributors are not accepted at this time for security reasons. The PR has been automatically closed per repository governance policy."
         run: |
-          set -e # CRITICAL FIX: Stops the script immediately if any curl command fails
-          
+          set -e # Stops script immediately if curl fails
+
           # The base API URL for GitHub
           API_URL="https://api.github.com/repos/$REPOSITORY/issues/$PR_NUMBER"
           
-          # JSON payloads need to be correctly escaped for shell execution
+          # JSON payloads
           COMMENT_JSON=$(echo "{\"body\": \"$RESPONSE_BODY\"}")
           CLOSE_JSON='{"state": "closed"}'
           
-          # 1. POST API Call: Post the Comment (Less privileged call)
+          # 1. POST API Call: Post the Comment
           echo "Posting closure comment via REST API..."
           curl -s -X POST "$API_URL/comments" \
           -H "Authorization: token $GITHUB_TOKEN" \
           -H "Content-Type: application/json" \
           --data "$COMMENT_JSON"
           
-          # 2. PATCH API Call: Close the Pull Request (Change state)
+          # 2. PATCH API Call: Close the Pull Request
           echo "Closing Pull Request via REST API..."
           curl -s -X PATCH "$API_URL" \
           -H "Authorization: token $GITHUB_TOKEN" \
