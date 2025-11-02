@@ -6,7 +6,7 @@ This project implements a secure, automated CI/CD pipeline for a **Next.js stati
 It serves as the primary deliverable for **Task 1**, demonstrating knowledge in web development, security governance, and advanced CI/CD debugging.
 
 ---
-test
+
 ### A. Repository Initialization and Setup
 
 The project was created and initialized using the following sequence:
