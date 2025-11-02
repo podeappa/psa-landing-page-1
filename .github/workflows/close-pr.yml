@@ -5,8 +5,8 @@ on:
     types: [opened, synchronized, reopened]
 
 permissions:
-  pull-requests: write # Grants authority to post comment and close PR
-  contents: read # CRITICAL: Allows actions/checkout to clone and establish Git context
+  pull-requests: write # FINAL FIX: Grants authority to post comment and close PR
+  contents: read # Allows actions/checkout to clone and establish Git context
 
 jobs:
   check_and_close_pr:
@@ -19,7 +19,7 @@ jobs:
       - name: Checkout Code and Establish Git Context
         uses: actions/checkout@v4
         with:
-          # CRITICAL FIX: Fetch depth 0 ensures full history and fixes "not a git repository" error
+          # Fetch depth 0 ensures full history and fixes "not a git repository" error
           fetch-depth: 0 
           
       - name: Post Closure Comment and Close PR
