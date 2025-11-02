@@ -29,19 +29,25 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           RESPONSE_BODY: "Pull requests from external contributors are not accepted at this time for security reasons. The PR has been automatically closed per repository governance policy."
         run: |
+          set -e # CRITICAL FIX: Stops the script immediately if any curl command fails
+          
           # The base API URL for GitHub
           API_URL="https://api.github.com/repos/$REPOSITORY/issues/$PR_NUMBER"
+          
+          # JSON payloads need to be correctly escaped for shell execution
+          COMMENT_JSON=$(echo "{\"body\": \"$RESPONSE_BODY\"}")
+          CLOSE_JSON='{"state": "closed"}'
           
           # 1. POST API Call: Post the Comment (Less privileged call)
           echo "Posting closure comment via REST API..."
           curl -s -X POST "$API_URL/comments" \
           -H "Authorization: token $GITHUB_TOKEN" \
           -H "Content-Type: application/json" \
-          --data "{\"body\": \"$RESPONSE_BODY\"}"
+          --data "$COMMENT_JSON"
           
           # 2. PATCH API Call: Close the Pull Request (Change state)
           echo "Closing Pull Request via REST API..."
           curl -s -X PATCH "$API_URL" \
           -H "Authorization: token $GITHUB_TOKEN" \
           -H "Content-Type: application/json" \
-          --data '{"state": "closed"}'
+          --data "$CLOSE_JSON"
