@@ -29,25 +29,20 @@ jobs:
           node-version: '20'
           cache: 'npm' # Best practice for fast CI/CD builds
 
+      # Simplified Install: Use standard npm install
       - name: Install Dependencies
-        run: |
-          npm install --force
-          npm cache clean --force
+        run: npm install
 
-      # FINAL CSS FIX: Explicitly set the POSTCSS_ENV to production before the build
+      # Simple Build: Rely on standard Next.js build command
       - name: Build Next.js Application
-        run: POSTCSS_ENV=production npm run build
+        run: npm run build
 
-      - name: Deploy to Vercel (Using Build Args)
+      - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
         with:
-          # CRITICAL AUTHOR FIX: Added --no-verify to bypass Vercel's Git Author security check
-          vercel-args: --prod --prebuilt --no-verify
-          
-          # CRITICAL FIX: Using correct kebab-case parameter names
+          # Simplest arguments possible to ensure success
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          
           # Point the action to the built output directory
           vercel-project-dir: ./out
