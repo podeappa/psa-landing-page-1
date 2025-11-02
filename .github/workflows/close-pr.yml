@@ -5,7 +5,7 @@ on:
     types: [opened, synchronized, reopened]
 
 permissions:
-  pull-requests: write # FINAL FIX: Grants authority to post comment and close PR
+  pull-requests: write # Grants authority to post comment and close PR
   contents: read # Allows actions/checkout to clone and establish Git context
 
 jobs:
@@ -16,20 +16,32 @@ jobs:
     if: github.actor != github.repository_owner
 
     steps:
-      - name: Checkout Code and Establish Git Context
+      - name: Checkout Code (Required for API Context)
         uses: actions/checkout@v4
         with:
           # Fetch depth 0 ensures full history and fixes "not a git repository" error
           fetch-depth: 0 
           
-      - name: Post Closure Comment and Close PR
+      - name: Post Closure Comment and Close PR (REST API Bypass)
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
           RESPONSE_BODY: "Pull requests from external contributors are not accepted at this time for security reasons. The PR has been automatically closed per repository governance policy."
         run: |
-          echo "PR_NUMBER=$PR_NUMBER"
-          echo "Adding closure comment to PR #$PR_NUMBER..."
+          # The base API URL for GitHub
+          API_URL="https://api.github.com/repos/$REPOSITORY/issues/$PR_NUMBER"
           
-          # Use the GitHub CLI tool (gh) to close the PR and add the comment
-          gh pr close $PR_NUMBER --comment "$RESPONSE_BODY"
+          # 1. POST API Call: Post the Comment (Less privileged call)
+          echo "Posting closure comment via REST API..."
+          curl -s -X POST "$API_URL/comments" \
+          -H "Authorization: token $GITHUB_TOKEN" \
+          -H "Content-Type: application/json" \
+          --data "{\"body\": \"$RESPONSE_BODY\"}"
+          
+          # 2. PATCH API Call: Close the Pull Request (Change state)
+          echo "Closing Pull Request via REST API..."
+          curl -s -X PATCH "$API_URL" \
+          -H "Authorization: token $GITHUB_TOKEN" \
+          -H "Content-Type: application/json" \
+          --data '{"state": "closed"}'
